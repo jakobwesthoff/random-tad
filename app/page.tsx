@@ -192,6 +192,11 @@ export default function Home() {
             className="text-blue-700 hover:text-blue-500 transition-colors"
           >
             MrJakob
+          </a>{" | "}<a
+            href="/imprint"
+            className="hover:text-blue-500 transition-colors"
+          >
+            Impressum
           </a>
         </div>
       </div>
