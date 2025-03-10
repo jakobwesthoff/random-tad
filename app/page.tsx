@@ -115,7 +115,16 @@ export default function Home() {
     <main className="flex flex-col h-[100dvh] bg-black text-white p-4 overflow-hidden">
       {/* Header */}
       <div className="text-center mb-4">
-        <h1 className="text-xl font-light tracking-[0.3em] text-slate-300">RANDOM TAD</h1>
+        <h1 className="text-xl font-light tracking-[0.3em] text-slate-300">RANDOM{" "}
+          <a
+            href="https://trekamdienstag.de"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-blue-500 transition-colors"
+          >
+            TAD
+          </a>
+        </h1>
       </div>
 
       {/* Categories */}
