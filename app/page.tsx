@@ -176,7 +176,7 @@ export default function Home() {
         <div>
           Made with ❤️ by{" "}
           <a
-            href="https://github.com/jakobwesthoff"
+            href="https://github.com/jakobwesthoff/random-tad"
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-700 hover:text-blue-500 transition-colors"
