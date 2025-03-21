@@ -116,16 +116,26 @@ function parseRSSItemToPodcastEpisode(
 
   return {
     id,
-    title,
-    description: description.replace(/<[^>]*>?/gm, ""), // Strip HTML tags
+    title: stripHtml(title),
+    description: stripHtml(description),
     category,
     duration,
     date,
     imageUrl,
     audioUrl,
-    itunesTitle,
+    itunesTitle: stripHtml(itunesTitle),
     linkUrl,
   };
+}
+
+function stripHtml(input: string): string {
+  const parser = new DOMParser();
+  const parsed = parser.parseFromString(
+    `<!doctype html><body>${input}</body>`,
+    "text/html",
+  );
+
+  return parsed.body.textContent ?? "";
 }
 
 function parseRSSFeedToEpisodes(xmlText: string): PodcastEpisode[] {
