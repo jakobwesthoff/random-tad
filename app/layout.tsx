@@ -13,13 +13,17 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Random TAD",
+    title: "RandomTAD",
+    startupImage: ["/apple-icon.png"],
   },
   icons: {
     icon: [
       { url: '/favicon.ico' },
       { url: '/icon.png' },
       { url: '/icon.svg' },
+    ],
+    apple: [
+      { url: '/apple-icon.png' },
     ],
   },
 }
