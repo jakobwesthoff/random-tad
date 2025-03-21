@@ -188,7 +188,6 @@ export async function fetchPodcastEpisodes(forceRefresh = false): Promise<{
     // We do not have a cache or a refresh was forced:
     //
 
-    // Use a CORS proxy to fetch the RSS feed
     const response = await fetch(RSS_FEED_URL);
 
     if (!response.ok) {
