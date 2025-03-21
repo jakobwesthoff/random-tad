@@ -7,8 +7,10 @@ import { Readable } from "stream";
 
 export const runtime = "nodejs";
 
-// Original RSS Url we are proxying from
+// Original RSS Url we are proxying from and cache config
 const RSS_FEED_URL = "https://14kltzj.podcaster.de/tad.rss";
+const CACHE_MAX_AGE = 60 * 60; // 1 hour
+const CACHE_STALE_WHILE_REVALIDATE = 30 * 60; // 30 min
 
 /**
  * Converts a Node.js Readable stream to a Web ReadableStream
@@ -70,6 +72,12 @@ function proxyRequest(
 
       // Convert Node.js stream to Web API stream
       const webStream = nodeToWebStream(res);
+
+      // Cache at vercels edge server
+      responseHeaders.set(
+        "Cache-Control",
+        `public, s-maxage=${CACHE_MAX_AGE}, stale-while-revalidate=${CACHE_STALE_WHILE_REVALIDATE}`,
+      );
 
       // Create and resolve the Response with the readable stream
       resolve(
