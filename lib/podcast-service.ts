@@ -6,7 +6,7 @@ import {
 import { getNextDayOfWeek } from "./utils";
 
 // RSS feed constants
-export const RSS_FEED_URL = "https://14kltzj.podcaster.de/tad.rss";
+export const RSS_FEED_URL = "/api/tad.rss";
 export const RSS_STORAGE_KEY = "star-trek-podcast-rss-xml";
 export const RSS_STORAGE_TIMESTAMP = "star-trek-podcast-timestamp";
 export const PODCAST_CATEGORIES_KEY = "star-trek-podcast-categories";
@@ -189,8 +189,7 @@ export async function fetchPodcastEpisodes(forceRefresh = false): Promise<{
     //
 
     // Use a CORS proxy to fetch the RSS feed
-    const corsProxyUrl = `https://corsproxy.io/${encodeURIComponent(RSS_FEED_URL)}`;
-    const response = await fetch(corsProxyUrl);
+    const response = await fetch(RSS_FEED_URL);
 
     if (!response.ok) {
       throw new Error(`RSS feed responded with status: ${response.status}`);
