@@ -32,6 +32,7 @@ export default function EpisodeCard({ episode, onNewRandom }: EpisodeCardProps) 
       </CardHeader>
       <CardContent>
         <div className="aspect-video bg-slate-900/50 rounded-md mb-4 flex items-center justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element -- external image from podcast RSS feed */}
           <img
             src={episode.imageUrl ?? "/placeholder.svg?height=300&width=300"}
             alt={episode.title}

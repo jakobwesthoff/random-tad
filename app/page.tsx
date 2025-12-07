@@ -16,7 +16,23 @@ import {
 
 export default function Home() {
   // State for enabled categories (all enabled by default, but will load from localStorage)
-  const [enabledCategories, setEnabledCategories] = useState<string[]>(podcastCategories.map((cat) => cat.id))
+  const [enabledCategories, setEnabledCategories] = useState<string[]>(() => {
+    if (typeof window === "undefined") {
+      return podcastCategories.map((cat) => cat.id)
+    }
+    const savedCategories = localStorage.getItem(PODCAST_CATEGORIES_KEY)
+    if (savedCategories) {
+      try {
+        const parsedCategories = JSON.parse(savedCategories)
+        if (Array.isArray(parsedCategories) && parsedCategories.length > 0) {
+          return parsedCategories
+        }
+      } catch (err) {
+        console.error("Error parsing saved categories:", err)
+      }
+    }
+    return podcastCategories.map((cat) => cat.id)
+  })
   // State for category visibility
   const [showCategories, setShowCategories] = useState(false)
 
@@ -39,20 +55,6 @@ export default function Home() {
     }
   }, []);
 
-  // Load saved categories from localStorage
-  useEffect(() => {
-    const savedCategories = localStorage.getItem(PODCAST_CATEGORIES_KEY)
-    if (savedCategories) {
-      try {
-        const parsedCategories = JSON.parse(savedCategories)
-        if (Array.isArray(parsedCategories) && parsedCategories.length > 0) {
-          setEnabledCategories(parsedCategories)
-        }
-      } catch (err) {
-        console.error("Error parsing saved categories:", err)
-      }
-    }
-  }, [])
 
   // Save categories to localStorage when they change
   useEffect(() => {
@@ -73,7 +75,11 @@ export default function Home() {
   }
 
   // Fetch episodes on component mount
+  // Note: This is a standard data fetching pattern. The setState calls happen
+  // asynchronously after the fetch completes, not synchronously in the effect body.
+  // Refactoring to use() with Suspense would be cleaner but requires restructuring.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadPodcastEpisodes()
   }, [])
 

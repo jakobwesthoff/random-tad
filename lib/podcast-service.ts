@@ -18,7 +18,7 @@ function parseRSSItemToImageUrl(
   item: Element,
   xmlDoc: XMLDocument,
 ): string | null {
-  let imageUrl = getElementNSWithFallback(
+  const imageUrl = getElementNSWithFallback(
     item,
     ITUNES_NAMESPACE,
     "itunes",
@@ -48,7 +48,7 @@ function parseRSSItemToImageUrl(
 }
 
 function extractCategoryFromTitle(title: string): PodcastCategory {
-  let category = podcastCategories[podcastCategories.length - 1];
+  const category = podcastCategories[podcastCategories.length - 1];
   for (const categoryCandidate of podcastCategories) {
     if (title.includes(categoryCandidate.search)) {
       return categoryCandidate;
@@ -58,10 +58,7 @@ function extractCategoryFromTitle(title: string): PodcastCategory {
   return category;
 }
 
-function parseRSSItemToFormattedPubDate(
-  item: Element,
-  _xmlDoc: XMLDocument,
-): string {
+function parseRSSItemToFormattedPubDate(item: Element): string {
   const pubDate = item.querySelector("pubDate")?.textContent;
   const date = pubDate ? new Date(pubDate) : new Date();
 
@@ -72,7 +69,9 @@ function parseRSSItemToFormattedPubDate(
       month: "short",
       day: "numeric",
     });
-  } catch (err) {}
+  } catch {
+    // Ignore date formatting errors
+  }
   return formattedDate;
 }
 
@@ -95,14 +94,14 @@ function parseRSSItemToPodcastEpisode(
     item.querySelector("description")?.textContent ||
     "No description available.";
 
-  const date = parseRSSItemToFormattedPubDate(item, xmlDoc);
+  const date = parseRSSItemToFormattedPubDate(item);
 
   const enclosure = item.querySelector("enclosure");
   const audioUrl = enclosure?.getAttribute("url") || "";
 
   const linkUrl = item.querySelector("link")?.textContent || "";
 
-  let duration =
+  const duration =
     getElementNSTextContentWithFallback(
       item,
       ITUNES_NAMESPACE,
@@ -110,9 +109,9 @@ function parseRSSItemToPodcastEpisode(
       "duration",
     ) || "00:00";
 
-  let imageUrl = parseRSSItemToImageUrl(item, xmlDoc);
+  const imageUrl = parseRSSItemToImageUrl(item, xmlDoc);
 
-  let category = extractCategoryFromTitle(title);
+  const category = extractCategoryFromTitle(title);
 
   return {
     id,
@@ -258,7 +257,7 @@ function getElementNSWithFallback(
       if (el) {
         return el;
       }
-    } catch (e) {
+    } catch {
       // Ignore errors and try next selector
     }
   }

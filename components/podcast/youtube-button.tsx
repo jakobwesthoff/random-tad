@@ -1,6 +1,6 @@
 import { PodcastEpisode } from "@/types/podcast";
 import { Button } from "@/components/ui/button";
-import { Play, Youtube } from "lucide-react";
+import { Youtube } from "lucide-react";
 
 interface YoutubeButtonProps {
   episode: PodcastEpisode
