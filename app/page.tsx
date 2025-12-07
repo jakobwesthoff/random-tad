@@ -16,23 +16,9 @@ import {
 
 export default function Home() {
   // State for enabled categories (all enabled by default, but will load from localStorage)
-  const [enabledCategories, setEnabledCategories] = useState<string[]>(() => {
-    if (typeof window === "undefined") {
-      return podcastCategories.map((cat) => cat.id)
-    }
-    const savedCategories = localStorage.getItem(PODCAST_CATEGORIES_KEY)
-    if (savedCategories) {
-      try {
-        const parsedCategories = JSON.parse(savedCategories)
-        if (Array.isArray(parsedCategories) && parsedCategories.length > 0) {
-          return parsedCategories
-        }
-      } catch (err) {
-        console.error("Error parsing saved categories:", err)
-      }
-    }
-    return podcastCategories.map((cat) => cat.id)
-  })
+  const [enabledCategories, setEnabledCategories] = useState<string[]>(
+    podcastCategories.map((cat) => cat.id)
+  )
   // State for category visibility
   const [showCategories, setShowCategories] = useState(false)
 
@@ -55,6 +41,22 @@ export default function Home() {
     }
   }, []);
 
+  // Load saved categories from localStorage
+  // This runs once on mount to restore user preferences - standard hydration pattern
+  useEffect(() => {
+    const savedCategories = localStorage.getItem(PODCAST_CATEGORIES_KEY)
+    if (savedCategories) {
+      try {
+        const parsedCategories = JSON.parse(savedCategories)
+        if (Array.isArray(parsedCategories) && parsedCategories.length > 0) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setEnabledCategories(parsedCategories)
+        }
+      } catch (err) {
+        console.error("Error parsing saved categories:", err)
+      }
+    }
+  }, [])
 
   // Save categories to localStorage when they change
   useEffect(() => {
