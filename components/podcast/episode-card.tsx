@@ -16,7 +16,7 @@ interface EpisodeCardProps {
 
 export default function EpisodeCard({ episode, onNewRandom }: EpisodeCardProps) {
   return (
-    <Card className="w-full max-w-3xl max-h-[90vh] overflow-auto bg-black/80 backdrop-blur-sm border border-slate-800 text-white">
+    <Card className="w-full max-w-3xl max-h-[90vh] overflow-auto bg-black/80 backdrop-blur-xs border border-slate-800 text-white">
       <CardHeader>
         <div className="flex justify-between items-start">
           <div>

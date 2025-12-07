@@ -146,7 +146,7 @@ export default function Home() {
       />
 
       {/* Main Content Area - Centered around the button */}
-      <div className="flex-grow flex items-center justify-center">
+      <div className="grow flex items-center justify-center">
         {isEpisodeListLoading ? (
           <LoadingIndicator />
         ) : error && episodes.length === 0 ? (
