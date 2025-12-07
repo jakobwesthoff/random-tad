@@ -15,7 +15,7 @@ export default function RandomButton({ episodeCount, onClick, disabled }: Random
     <div className="relative">
       <style jsx>{`
         @keyframes scale-pulse {
-          to { transform: scale(1.0); opacity: 1.0 }
+          to { scale: 1.0; opacity: 1.0 }
         }
       `}</style>
       {/* Blurred pulsing "light" animation */}
