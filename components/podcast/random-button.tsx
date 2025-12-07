@@ -15,7 +15,7 @@ export default function RandomButton({ episodeCount, onClick, disabled }: Random
     <div className="relative">
       <style jsx>{`
         @keyframes scale-pulse {
-          to { transform: scale(1.0); opacity: 1.0 }
+          to { scale: 1.0; opacity: 1.0 }
         }
       `}</style>
       {/* Blurred pulsing "light" animation */}
@@ -46,7 +46,7 @@ export default function RandomButton({ episodeCount, onClick, disabled }: Random
         onClick={onClick}
         disabled={disabled}
       >
-        <div className="absolute inset-3 rounded-full bg-gradient-to-b from-blue-900/30 to-cyan-900/10 blur-sm animate-[pulse_2s_ease-in-out_infinite]" />
+        <div className="absolute inset-3 rounded-full bg-gradient-to-b from-blue-900/30 to-cyan-900/10 blur-xs animate-[pulse_2s_ease-in-out_infinite]" />
         <Shuffle className="w-6 h-6 relative z-10" />
         <span className="text-xs font-light tracking-[0.2em] relative z-10">RANDOM</span>
         <span className="text-[10px] text-slate-500 relative z-10">EPISODE</span>

@@ -3,6 +3,10 @@
 ## About
 A Random [Trek am Dienstag](https://trekamdienstag.de) Podcast Episode Selector
 
+<div align="center">
+  <img src="assets/screenshot.png" width="80%" alt="random-tad in action">
+</div>
+
 ## What?
 This is a lightweight web application that loads and parses the RSS feed of
 **Trek am Dienstag**, one of my favorite German podcasts. In this show, two

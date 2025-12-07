@@ -36,7 +36,7 @@ export default function CategorySelector({
           showCategories ? "max-h-80 opacity-100 mb-4" : "max-h-0 opacity-0",
         )}
       >
-        <div className="grid gap-4 px-2 py-2 bg-slate-900/30 rounded-lg backdrop-blur-sm">
+        <div className="grid gap-4 px-2 py-2 bg-slate-900/30 rounded-lg backdrop-blur-xs">
           <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3 md:grid-cols-7">
             {categories.map((category) => (
               <div key={category.id} className="flex items-center justify-between">
