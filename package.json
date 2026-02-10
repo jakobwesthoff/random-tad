@@ -14,7 +14,7 @@
     "@tailwindcss/postcss": "^4.1.17",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.556.0",
+    "lucide-react": "^0.563.0",
     "next": "^16.0.7",
     "next-themes": "latest",
     "react": "^19",
