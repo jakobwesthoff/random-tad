@@ -1,0 +1,3 @@
+[submodule "vendor/add-to-homescreen"]
+	path = vendor/add-to-homescreen
+	url = https://github.com/philfung/add-to-homescreen.git
