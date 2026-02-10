@@ -28,6 +28,18 @@ export function shouldShowA2HS(interval: number): boolean {
   return (count - 1) % interval === 0
 }
 
+export function isMobileDevice(): boolean {
+  const ua = navigator.userAgent
+  // Android detection — matches library's isDeviceAndroid()
+  if (/Android/.test(ua)) return true
+  // iOS detection — matches library's isDeviceIOS() + isBrowserIOSIPadSafari()
+  if (/iPhone|iPad|iPod/.test(ua)) return true
+  // iPad on iOS 13+: reports as Macintosh but has multi-touch.
+  // Matches library's isBrowserIOSIPadSafari() fallback.
+  if (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return true
+  return false
+}
+
 export function isStandalone(): boolean {
   return (
     !!("standalone" in navigator && (navigator as unknown as { standalone: boolean }).standalone) ||

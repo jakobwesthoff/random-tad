@@ -1,14 +1,14 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import RandomButton from "@/components/random-button"
 import EpisodeCard from "@/components/podcast/episode-card"
 import CategorySelector from "@/components/category-selector"
 import LoadingIndicator from "@/components/loading-indicator"
 import WelcomeOverlay from "@/components/welcome/welcome-overlay"
-import AddToHomeScreen from "@/components/add-to-homescreen"
+import { loadAndShowA2HS } from "@/components/add-to-homescreen"
 import { Info, MonitorSmartphone } from "lucide-react"
 import StarfieldCanvas from "@/components/ui/starfield-canvas"
 import { type PodcastEpisode as PodcastEpisode, podcastCategories } from "@/types/podcast"
@@ -19,7 +19,7 @@ import {
 } from "@/lib/podcast-service"
 import { selectRandomEpisode } from "@/lib/random-selection"
 import { hasSeenWelcome, markWelcomeSeen } from "@/lib/welcome"
-import { shouldShowA2HS, isStandalone, A2HS_REMINDER_INTERVAL } from "@/lib/add-to-homescreen"
+import { shouldShowA2HS, isStandalone, isMobileDevice, A2HS_REMINDER_INTERVAL } from "@/lib/add-to-homescreen"
 
 export default function Home() {
   // State for enabled categories (all enabled by default, but will load from localStorage)
@@ -32,10 +32,9 @@ export default function Home() {
   // State for welcome overlay
   const [showWelcome, setShowWelcome] = useState(false)
 
-  // State for add-to-homescreen
-  const [standalone, setStandalone] = useState(true) // default true to hide button during SSR
-  const [a2hsTrigger, setA2hsTrigger] = useState<(() => void) | null>(null)
-  const [a2hsAutoShow, setA2hsAutoShow] = useState(false)
+  // State for add-to-homescreen (mobile-only)
+  const [isMobile, setIsMobile] = useState(false) // default false to hide button during SSR
+  const [a2hsLoading, setA2hsLoading] = useState(false)
 
   // State for the currently displayed episode, when selected
   const [currentEpisode, setCurrentEpisode] = useState<PodcastEpisode | null>(null)
@@ -83,16 +82,15 @@ export default function Home() {
     }
   }, [])
 
-  // Detect standalone mode and determine A2HS auto-show.
-  // navigator.standalone and matchMedia('display-mode: standalone') are browser
-  // APIs unavailable during SSR, so this must run post-mount. The setState calls
-  // are synchronous and only run once — no alternative pattern avoids them here.
+  // Detect mobile device and auto-show A2HS if appropriate.
+  // navigator.userAgent, navigator.standalone, and matchMedia are browser APIs
+  // unavailable during SSR, so this must run post-mount. The setState call is
+  // synchronous and only runs once — no alternative pattern avoids it here.
   useEffect(() => {
-    const isStandaloneMode = isStandalone()
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setStandalone(isStandaloneMode)
-    if (!isStandaloneMode) {
-      setA2hsAutoShow(shouldShowA2HS(A2HS_REMINDER_INTERVAL))
+    if (isStandalone() || !isMobileDevice()) return
+    setIsMobile(true)
+    if (shouldShowA2HS(A2HS_REMINDER_INTERVAL)) {
+      loadAndShowA2HS()
     }
   }, [])
 
@@ -154,11 +152,6 @@ export default function Home() {
       setCurrentEpisode(null)
     }
   }
-
-  // Stable callback for A2HS trigger registration
-  const handleA2hsTriggerReady = useCallback((trigger: () => void) => {
-    setA2hsTrigger(() => trigger)
-  }, [])
 
   // Calculate category counts
   const categoryCounts = getCategoryCounts(episodes, podcastCategories)
@@ -233,22 +226,25 @@ export default function Home() {
         }}
       />
 
-      {/* Add to homescreen */}
-      {!standalone && (
-        <AddToHomeScreen
-          onTriggerReady={handleA2hsTriggerReady}
-          autoShow={a2hsAutoShow}
-        />
-      )}
-
-      {/* Floating install button (browser mode only) */}
-      {!standalone && a2hsTrigger && (
+      {/* Floating install button (mobile browser only) */}
+      {isMobile && (
         <button
-          onClick={a2hsTrigger}
+          onClick={async () => {
+            setA2hsLoading(true)
+            try {
+              await loadAndShowA2HS()
+            } finally {
+              setA2hsLoading(false)
+            }
+          }}
           className="fixed bottom-4 right-4 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 border border-slate-700/50 text-slate-400 hover:text-blue-400 hover:border-blue-500/50 hover:shadow-[0_0_12px_rgba(59,130,246,0.3)] transition-all cursor-pointer"
           aria-label="Install app"
         >
-          <MonitorSmartphone className="h-5 w-5" />
+          {a2hsLoading ? (
+            <div className="h-5 w-5 rounded-full border-2 border-transparent border-t-blue-500 animate-spin" />
+          ) : (
+            <MonitorSmartphone className="h-5 w-5" />
+          )}
         </button>
       )}
 
