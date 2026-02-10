@@ -3,7 +3,6 @@ import "./globals.css"
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "next-themes"
-import ServiceWorkerRegistration from "@/components/service-worker-registration"
 
 // font
 const inter = Inter({ subsets: ["latin"] })
@@ -48,7 +47,6 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {children}
         </ThemeProvider>
-        <ServiceWorkerRegistration />
       </body>
     </html>
   )
