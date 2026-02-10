@@ -13,6 +13,7 @@ import {
   getCategoryCounts,
   PODCAST_CATEGORIES_KEY,
 } from "@/lib/podcast-service"
+import { selectRandomEpisode } from "@/lib/random-selection"
 
 export default function Home() {
   // State for enabled categories (all enabled by default, but will load from localStorage)
@@ -102,9 +103,10 @@ export default function Home() {
     const eligibleEpisodes = episodes.filter((episode) => enabledCategories.includes(episode.category.id))
 
     if (eligibleEpisodes.length > 0) {
-      const randomIndex = Math.floor(Math.random() * eligibleEpisodes.length)
-      const selectedEpisode = eligibleEpisodes[randomIndex]
-      setCurrentEpisode(selectedEpisode);
+      const selectedEpisode = selectRandomEpisode(eligibleEpisodes)
+      if (selectedEpisode) {
+        setCurrentEpisode(selectedEpisode);
+      }
     }
   }
 
