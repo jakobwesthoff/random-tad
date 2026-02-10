@@ -16,7 +16,7 @@ interface EpisodeCardProps {
 
 export default function EpisodeCard({ episode, onNewRandom }: EpisodeCardProps) {
   return (
-    <Card className="w-full max-w-3xl max-h-[90vh] overflow-auto bg-black/80 backdrop-blur-xs border border-slate-800 text-white">
+    <Card className="w-full max-w-3xl max-h-[90vh] overflow-auto bg-[#0a0f1a] border border-blue-500/20 text-white">
       <CardHeader>
         <div className="flex justify-between items-start">
           <div>
@@ -25,13 +25,13 @@ export default function EpisodeCard({ episode, onNewRandom }: EpisodeCardProps) 
               {episode.category.name}
             </CardDescription>
           </div>
-          <Badge variant="outline" className="bg-black text-blue-300 border-slate-800 text-xs">
+          <Badge variant="outline" className="bg-blue-950/60 text-blue-300 border-blue-500/20 text-xs">
             Episode
           </Badge>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="aspect-video bg-slate-900/50 rounded-md mb-4 flex items-center justify-center">
+        <div className="aspect-video bg-blue-950/50 rounded-md mb-4 flex items-center justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element -- external image from podcast RSS feed */}
           <img
             src={episode.imageUrl ?? "/placeholder.svg?height=300&width=300"}
@@ -56,7 +56,7 @@ export default function EpisodeCard({ episode, onNewRandom }: EpisodeCardProps) 
           <ListenButton episode={episode} />
           <Button
             variant="outline"
-            className="flex-1 border-slate-800 text-slate-400 hover:bg-slate-900 hover:text-white"
+            className="flex-1 border-blue-500/20 text-slate-300 bg-blue-950/30 hover:bg-blue-900/40 hover:text-white"
             size="sm"
             onClick={onNewRandom}
           >

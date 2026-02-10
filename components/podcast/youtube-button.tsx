@@ -13,7 +13,7 @@ export function YoutubeButton({ episode }: YoutubeButtonProps) {
 
   return <Button
     variant="outline"
-    className="flex-1 border-slate-800 text-slate-400 hover:bg-slate-900 hover:text-white"
+    className="flex-1 border-blue-500/20 text-slate-300 bg-blue-950/30 hover:bg-blue-900/40 hover:text-white"
     size="sm"
     asChild
   >

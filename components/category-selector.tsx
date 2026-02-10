@@ -15,6 +15,7 @@ interface CategorySelectorProps {
   onToggleCategory: (categoryId: string) => void
   onToggleVisibility: () => void
   onRefresh: () => void
+  className?: string
 }
 
 export default function CategorySelector({
@@ -26,9 +27,10 @@ export default function CategorySelector({
   onToggleCategory,
   onToggleVisibility,
   onRefresh,
+  className,
 }: CategorySelectorProps) {
   return (
-    <>
+    <div className={className}>
       {/* Categories - Hidden by default */}
       <div
         className={cn(
@@ -36,7 +38,7 @@ export default function CategorySelector({
           showCategories ? "max-h-80 opacity-100 mb-4" : "max-h-0 opacity-0",
         )}
       >
-        <div className="grid gap-4 px-2 py-2 bg-slate-900/30 rounded-lg backdrop-blur-xs">
+        <div className="grid gap-4 px-2 py-2 bg-blue-950/40 rounded-lg border border-blue-500/25">
           <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3 md:grid-cols-7">
             {categories.map((category) => (
               <div key={category.id} className="flex items-center justify-between">
@@ -48,14 +50,14 @@ export default function CategorySelector({
                   checked={enabledCategories.includes(category.id)}
                   onCheckedChange={() => onToggleCategory(category.id)}
                   disabled={enabledCategories.length === 1 && enabledCategories.includes(category.id)}
-                  className="scale-75"
+                  className="scale-75 data-[state=checked]:bg-blue-500 data-[state=unchecked]:bg-blue-950/60"
                 />
               </div>
             ))}
           </div>
 
           {/* Refresh button */}
-          <div className="flex justify-end border-t border-slate-800 pt-2">
+          <div className="flex justify-end border-t border-blue-500/15 pt-2">
             <Button
               variant="ghost"
               size="sm"
@@ -96,7 +98,7 @@ export default function CategorySelector({
           )}
         </Button>
       </div>
-    </>
+    </div>
   )
 }
 

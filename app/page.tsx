@@ -3,10 +3,13 @@
 import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import RandomButton from "@/components/podcast/random-button"
+import RandomButton from "@/components/random-button"
 import EpisodeCard from "@/components/podcast/episode-card"
-import CategorySelector from "@/components/podcast/category-selector"
-import LoadingIndicator from "@/components/podcast/loading-indicator"
+import CategorySelector from "@/components/category-selector"
+import LoadingIndicator from "@/components/loading-indicator"
+import WelcomeOverlay from "@/components/welcome/welcome-overlay"
+import { Info } from "lucide-react"
+import StarfieldCanvas from "@/components/ui/starfield-canvas"
 import { type PodcastEpisode as PodcastEpisode, podcastCategories } from "@/types/podcast"
 import {
   fetchPodcastEpisodes,
@@ -14,6 +17,7 @@ import {
   PODCAST_CATEGORIES_KEY,
 } from "@/lib/podcast-service"
 import { selectRandomEpisode } from "@/lib/random-selection"
+import { hasSeenWelcome, markWelcomeSeen } from "@/lib/welcome"
 
 export default function Home() {
   // State for enabled categories (all enabled by default, but will load from localStorage)
@@ -22,6 +26,9 @@ export default function Home() {
   )
   // State for category visibility
   const [showCategories, setShowCategories] = useState(false)
+
+  // State for welcome overlay
+  const [showWelcome, setShowWelcome] = useState(false)
 
   // State for the currently displayed episode, when selected
   const [currentEpisode, setCurrentEpisode] = useState<PodcastEpisode | null>(null)
@@ -42,8 +49,9 @@ export default function Home() {
     }
   }, []);
 
-  // Load saved categories from localStorage
-  // This runs once on mount to restore user preferences - standard hydration pattern
+  // Load saved categories from localStorage.
+  // setState in effect is intentional: localStorage is unavailable during SSR,
+  // so we must read it post-hydration to avoid server/client mismatch.
   useEffect(() => {
     const savedCategories = localStorage.getItem(PODCAST_CATEGORIES_KEY)
     if (savedCategories) {
@@ -56,6 +64,15 @@ export default function Home() {
       } catch (err) {
         console.error("Error parsing saved categories:", err)
       }
+    }
+  }, [])
+
+  // Show welcome overlay on first visit.
+  // Same SSR hydration constraint as above — localStorage must be read post-mount.
+  useEffect(() => {
+    if (!hasSeenWelcome()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setShowWelcome(true)
     }
   }, [])
 
@@ -122,19 +139,21 @@ export default function Home() {
   const categoryCounts = getCategoryCounts(episodes, podcastCategories)
 
   return (
-    <main className="flex flex-col h-[100dvh] bg-black text-white p-4 overflow-hidden">
+    <main className="isolate relative h-[100dvh] text-white">
+      <StarfieldCanvas className="-z-10" />
+
+      <div className="flex flex-col h-full p-4 overflow-y-auto overscroll-y-none">
       {/* Header */}
-      <div className="text-center mb-4">
-        <h1 className="text-xl font-light tracking-[0.3em] text-slate-300">RANDOM{" "}
-          <a
-            href="https://trekamdienstag.de"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-blue-500 transition-colors"
-          >
-            TAD
-          </a>
-        </h1>
+      <div className="text-center mb-4 flex items-center justify-center gap-2">
+        <button
+          onClick={() => setShowWelcome(true)}
+          className="flex items-center gap-2 hover:text-blue-400 transition-colors cursor-pointer"
+        >
+          <h1 className="text-xl font-light tracking-[0.3em] text-slate-300">
+            RANDOM TAD
+          </h1>
+          <Info className="h-4 w-4 text-slate-500" aria-hidden="true" />
+        </button>
       </div>
 
       {/* Categories */}
@@ -150,7 +169,7 @@ export default function Home() {
       />
 
       {/* Main Content Area - Centered around the button */}
-      <div className="grow flex items-center justify-center">
+      <div className="grow flex items-center justify-center min-h-48">
         {isEpisodeListLoading ? (
           <LoadingIndicator />
         ) : error && episodes.length === 0 ? (
@@ -180,6 +199,15 @@ export default function Home() {
         )}
       </div>
 
+      {/* Welcome overlay */}
+      <WelcomeOverlay
+        visible={showWelcome}
+        onDismiss={() => {
+          markWelcomeSeen()
+          setShowWelcome(false)
+        }}
+      />
+
       {/* Footer */}
       <div className="text-center text-xs text-slate-700 mt-4 font-light flex flex-col gap-1">
         <div>Boldly go where no podcast has gone before</div>
@@ -189,11 +217,12 @@ export default function Home() {
             href="https://github.com/jakobwesthoff/random-tad"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-700 hover:text-blue-500 transition-colors"
+            className="text-blue-500/50 hover:text-blue-400 transition-colors"
           >
             MrJakob
           </a>
         </div>
+      </div>
       </div>
     </main>
   )
