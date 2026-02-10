@@ -74,10 +74,12 @@ export default function Home() {
     }
   }, [])
 
-  // Show welcome overlay on first visit.
+  // Show welcome overlay on first visit (browser mode only).
+  // In standalone mode the user already visited the site to add it to their
+  // homescreen, so the welcome is redundant.
   // Same SSR hydration constraint as above — localStorage must be read post-mount.
   useEffect(() => {
-    if (!hasSeenWelcome()) {
+    if (!hasSeenWelcome() && !isStandalone()) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowWelcome(true)
     }
