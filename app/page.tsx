@@ -35,6 +35,7 @@ export default function Home() {
   // State for add-to-homescreen (mobile-only)
   const [isMobile, setIsMobile] = useState(false) // default false to hide button during SSR
   const [a2hsLoading, setA2hsLoading] = useState(false)
+  const pendingA2HS = useRef(false)
 
   // State for the currently displayed episode, when selected
   const [currentEpisode, setCurrentEpisode] = useState<PodcastEpisode | null>(null)
@@ -90,7 +91,12 @@ export default function Home() {
     if (isStandalone() || !isMobileDevice()) return
     setIsMobile(true)
     if (shouldShowA2HS(A2HS_REMINDER_INTERVAL)) {
-      loadAndShowA2HS()
+      if (!hasSeenWelcome()) {
+        // Welcome overlay shows first — defer A2HS until it's dismissed
+        pendingA2HS.current = true
+      } else {
+        loadAndShowA2HS()
+      }
     }
   }, [])
 
@@ -223,6 +229,10 @@ export default function Home() {
         onDismiss={() => {
           markWelcomeSeen()
           setShowWelcome(false)
+          if (pendingA2HS.current) {
+            pendingA2HS.current = false
+            loadAndShowA2HS()
+          }
         }}
       />
 
