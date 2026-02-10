@@ -12,13 +12,14 @@ function AppleIcon({ className }: { className?: string }) {
   )
 }
 
-async function getApplePodcastsLink(
-  searchTerm: string,
-): Promise<string> {
-  try {
-    // Use the iTunes Search API to find the podcast
-    const apiUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(searchTerm)}&limit=1&media=podcast&entity=podcastEpisode`;
+interface ItunesResult {
+  trackName: string;
+  trackViewUrl: string;
+}
 
+async function searchItunes(searchTerm: string, limit: number): Promise<ItunesResult[]> {
+  try {
+    const apiUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(searchTerm)}&limit=${limit}&media=podcast&entity=podcastEpisode`;
     const response = await fetch(apiUrl);
 
     if (!response.ok) {
@@ -26,20 +27,35 @@ async function getApplePodcastsLink(
     }
 
     const data = await response.json();
-
-    // Check if we got any results
-    if (data.resultCount > 0 && data.results[0].trackViewUrl) {
-      // Return the direct trackViewUrl from the search result
-      return data.results[0].trackViewUrl;
-    } else {
-      // No results found, return the search URL as fallback
-      return `https://podcasts.apple.com/search?term=${encodeURIComponent(searchTerm)}&media=podcast&entity=podcastEpisode`;
-    }
+    return data.results ?? [];
   } catch (error) {
     console.error("Error fetching iTunes data:", error);
-    // On error, return the search URL as fallback
-    return `https://podcasts.apple.com/search?term=${encodeURIComponent(searchTerm)}&media=podcast&entity=podcastEpisode`;
+    return [];
   }
+}
+
+function findMatchingEpisode(results: ItunesResult[], episodeTitle: string): string | null {
+  const normalizedTitle = episodeTitle.toLowerCase();
+  const match = results.find(
+    (result) => result.trackName?.toLowerCase() === normalizedTitle
+  );
+  return match?.trackViewUrl ?? null;
+}
+
+async function getApplePodcastsLink(episodeTitle: string): Promise<string | null> {
+  const searchTerm = `trek am dienstag ${episodeTitle}`;
+
+  // Quick search with limit=1
+  const quickResults = await searchItunes(searchTerm, 1);
+  const quickMatch = findMatchingEpisode(quickResults, episodeTitle);
+  if (quickMatch) return quickMatch;
+
+  // Expanded search with limit=10
+  const expandedResults = await searchItunes(searchTerm, 10);
+  const expandedMatch = findMatchingEpisode(expandedResults, episodeTitle);
+  if (expandedMatch) return expandedMatch;
+
+  return null;
 }
 
 interface ApplePodcastButtonProps {
@@ -47,7 +63,7 @@ interface ApplePodcastButtonProps {
 };
 
 export function ApplePodcastButton({ episode }: ApplePodcastButtonProps) {
-  const [applePodcastsUrl, setApplePodcastsUrl] = useState<string>("")
+  const [applePodcastsUrl, setApplePodcastsUrl] = useState<string | null>(null)
   const [isAppleLinkLoading, setIsAppleLinkLoading] = useState<boolean>(false)
 
 
@@ -57,17 +73,15 @@ export function ApplePodcastButton({ episode }: ApplePodcastButtonProps) {
       if (!episode) return
 
       setIsAppleLinkLoading(true)
+      setApplePodcastsUrl(null)
 
       try {
-        // Use iTunes title if available, otherwise fall back to regular title
-        const searchTerm = `trek am dienstag ${episode.itunesTitle || episode.title}`
-        const url = await getApplePodcastsLink(searchTerm)
+        const episodeTitle = episode.itunesTitle || episode.title
+        const url = await getApplePodcastsLink(episodeTitle)
         setApplePodcastsUrl(url)
       } catch (error) {
         console.error("Error getting Apple Podcasts link:", error)
-        // Fallback to search URL
-        const searchTerm = encodeURIComponent(`trek am dienstag ${episode.itunesTitle || episode.title}`)
-        setApplePodcastsUrl(`https://podcasts.apple.com/search?term=${searchTerm}&media=podcast&entity=podcastEpisode`)
+        setApplePodcastsUrl(null)
       } finally {
         setIsAppleLinkLoading(false)
       }
@@ -75,6 +89,24 @@ export function ApplePodcastButton({ episode }: ApplePodcastButtonProps) {
 
     fetchAppleLink()
   }, [episode])
+
+  const isDisabled = isAppleLinkLoading || applePodcastsUrl === null;
+
+  if (isDisabled) {
+    return <Button
+      variant="outline"
+      className="flex-1 border-slate-800 text-slate-400 hover:bg-slate-900 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+      size="sm"
+      disabled
+    >
+      {isAppleLinkLoading ? (
+        <Loader2 className="h-3 w-3 animate-spin mr-1" />
+      ) : (
+        <AppleIcon className="h-3 w-3" />
+      )}
+      <span>Apple Podcasts</span>
+    </Button>
+  }
 
   return <Button
     variant="outline"
@@ -86,13 +118,8 @@ export function ApplePodcastButton({ episode }: ApplePodcastButtonProps) {
       href={applePodcastsUrl}
       target="_blank"
       rel="noopener noreferrer"
-      aria-disabled={isAppleLinkLoading}
     >
-      {isAppleLinkLoading ? (
-        <Loader2 className="h-3 w-3 animate-spin mr-1" />
-      ) : (
-        <AppleIcon className="h-3 w-3" />
-      )}
+      <AppleIcon className="h-3 w-3" />
       <span>Apple Podcasts</span>
     </a>
   </Button>
