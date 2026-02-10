@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "copy-a2hs": "mkdir -p public/add-to-homescreen/img && cp vendor/add-to-homescreen/dist/add-to-homescreen.min.js public/add-to-homescreen/ && cp vendor/add-to-homescreen/dist/add-to-homescreen.min.css public/add-to-homescreen/ && cp -r vendor/add-to-homescreen/dist/assets/img/* public/add-to-homescreen/img/",
+    "predev": "npm run copy-a2hs",
+    "prebuild": "npm run copy-a2hs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

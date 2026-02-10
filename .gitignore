@@ -28,3 +28,6 @@ next-env.d.ts
 
 # macos stuff
 .DS_Store
+
+# add-to-homescreen library assets (copied from submodule during build)
+/public/add-to-homescreen
