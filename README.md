@@ -30,6 +30,19 @@ project and your other podcast ventures. You're truly amazing!
 ## Development
 This application is built with Next.js framework and styled using Tailwind CSS.
 
+### Git Submodules
+This project uses a git submodule for the [add-to-homescreen](https://github.com/philfung/add-to-homescreen) library. Make sure to initialize it when cloning:
+
+```sh
+# Clone with submodules
+git clone --recurse-submodules https://github.com/jakobwesthoff/random-tad.git
+
+# Or, if already cloned without submodules
+git submodule update --init
+```
+
+The `predev` and `prebuild` scripts automatically copy the library's assets from the submodule into `public/`.
+
 ### Installing dependencies
 ```sh
 npm install

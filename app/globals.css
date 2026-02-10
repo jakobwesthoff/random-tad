@@ -194,9 +194,118 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* add-to-homescreen library dark theme overrides
+   Specificity is boosted with .adhs-container.adhs-container (double-class)
+   so these overrides always win regardless of CSS load order. The library CSS
+   is loaded dynamically and may appear after globals.css in the cascade. */
+.dark .adhs-container.adhs-container {
+  color: #e2e8f0;
+}
+
+.dark .adhs-container.adhs-container .adhs-modal {
+  background-color: rgba(15, 15, 20, 0.97);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dark .adhs-container.adhs-container .adhs-modal .adhs-title,
+.dark .adhs-container.adhs-container .adhs-modal .adhs-error-title {
+  color: #f1f5f9;
+}
+
+.dark .adhs-container.adhs-container .adhs-modal .adhs-install-app,
+.dark .adhs-container.adhs-container .adhs-modal .adhs-app-name {
+  color: #f1f5f9;
+}
+
+.dark .adhs-container.adhs-container .adhs-modal .adhs-app-url {
+  color: #64748b;
+}
+
+.dark .adhs-container.adhs-container .adhs-modal .adhs-blurb,
+.dark .adhs-container.adhs-container .adhs-modal .adhs-error-body {
+  color: #94a3b8;
+}
+
+.dark .adhs-container.adhs-container .adhs-modal .adhs-list .adhs-list-item .adhs-instruction {
+  color: #cbd5e1;
+}
+
+.dark .adhs-container.adhs-container .adhs-modal .adhs-list .adhs-list-item .adhs-circle {
+  background-color: #3b82f6;
+}
+
+.dark .adhs-container.adhs-container .adhs-modal .adhs-list .adhs-list-item .adhs-list-button {
+  background-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+  color: #e2e8f0;
+}
+
+.dark .adhs-container.adhs-container .adhs-modal .adhs-button {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.dark .adhs-container.adhs-container .adhs-modal .adhs-button:hover {
+  background-color: #2563eb;
+}
+
+.dark .adhs-container.adhs-container .adhs-modal .adhs-error-copy-link-button {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #e2e8f0;
+}
+
+/* Invert black SVG icons in instruction steps to white for dark mode.
+   Excludes the app icon (.adhs-your-app-icon) which should keep its colors. */
+.dark .adhs-container.adhs-container .adhs-modal .adhs-list img:not(.adhs-your-app-icon) {
+  filter: invert(1);
+}
+
+/* iOS Safari sharing/add-to-home-screen button overrides */
+.dark .adhs-container.adhs-container.adhs-ios.adhs-safari .adhs-modal .adhs-list .adhs-ios-safari-sharing-api-button,
+.dark .adhs-container.adhs-container.adhs-ios.adhs-safari .adhs-modal .adhs-list .adhs-ios-safari-add-to-home-screen-button,
+.dark .adhs-container.adhs-container.adhs-ios.adhs-chrome .adhs-modal .adhs-list .adhs-ios-chrome-more-button,
+.dark .adhs-container.adhs-container.adhs-ios.adhs-chrome .adhs-modal .adhs-list .adhs-ios-chrome-add-to-home-screen-button {
+  background-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Android Chrome button overrides */
+.dark .adhs-container.adhs-container.adhs-android.adhs-chrome .adhs-modal .adhs-list .adhs-android-chrome-more-button,
+.dark .adhs-container.adhs-container.adhs-android.adhs-chrome .adhs-modal .adhs-list .adhs-android-chrome-add-to-homescreen-button,
+.dark .adhs-container.adhs-container.adhs-android.adhs-chrome .adhs-modal .adhs-list .adhs-android-chrome-install-app {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* In-app browser button overrides */
+.dark .adhs-container.adhs-container.adhs-inappbrowser-openinsystembrowser .adhs-modal .adhs-list .adhs-emphasis,
+.dark .adhs-container.adhs-container.adhs-inappbrowser-openinsafari .adhs-modal .adhs-list .adhs-emphasis,
+.dark .adhs-container.adhs-container.adhs-inappbrowser-openinsystembrowser .adhs-modal .adhs-list .adhs-more-button,
+.dark .adhs-container.adhs-container.adhs-inappbrowser-openinsafari .adhs-modal .adhs-list .adhs-more-button {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+  color: #e2e8f0;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+  html {
+    overscroll-behavior: none;
   }
   body {
     @apply bg-background text-foreground;

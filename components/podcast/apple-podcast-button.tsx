@@ -95,7 +95,7 @@ export function ApplePodcastButton({ episode }: ApplePodcastButtonProps) {
   if (isDisabled) {
     return <Button
       variant="outline"
-      className="flex-1 border-slate-800 text-slate-400 hover:bg-slate-900 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+      className="flex-1 border-blue-500/20 text-slate-300 bg-blue-950/30 hover:bg-blue-900/40 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
       size="sm"
       disabled
     >
@@ -110,7 +110,7 @@ export function ApplePodcastButton({ episode }: ApplePodcastButtonProps) {
 
   return <Button
     variant="outline"
-    className="flex-1 border-slate-800 text-slate-400 hover:bg-slate-900 hover:text-white"
+    className="flex-1 border-blue-500/20 text-slate-300 bg-blue-950/30 hover:bg-blue-900/40 hover:text-white"
     size="sm"
     asChild
   >
