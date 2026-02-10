@@ -62,7 +62,7 @@ export default function CategorySelector({
               variant="ghost"
               size="sm"
               onClick={onRefresh}
-              disabled={isLoading}
+              disabled={showCategories && isLoading}
               className="text-xs text-slate-500 hover:text-blue-400 hover:bg-slate-900/50"
             >
               {isLoading ? (
