@@ -8,6 +8,7 @@ import type { PodcastEpisode } from "@/types/podcast"
 import { ListenButton } from "@/components/podcast/listen-button"
 import { ApplePodcastButton } from "@/components/podcast/apple-podcast-button"
 import { YoutubeButton } from "@/components/podcast/youtube-button"
+import { EpisodeImage } from "@/components/podcast/episode-image"
 
 interface EpisodeCardProps {
   episode: PodcastEpisode
@@ -31,14 +32,7 @@ export default function EpisodeCard({ episode, onNewRandom }: EpisodeCardProps) 
         </div>
       </CardHeader>
       <CardContent>
-        <div className="aspect-video bg-blue-950/50 rounded-md mb-4 flex items-center justify-center">
-          {/* eslint-disable-next-line @next/next/no-img-element -- external image from podcast RSS feed */}
-          <img
-            src={episode.imageUrl ?? "/placeholder.svg?height=300&width=300"}
-            alt={episode.title}
-            className="h-full w-full object-cover rounded-md"
-          />
-        </div>
+        <EpisodeImage key={episode.id} imageUrl={episode.imageUrl} title={episode.title} />
         <div className="text-sm text-slate-400 mb-4">{episode.description}</div>
         <div className="flex justify-between text-xs text-slate-500 mt-4">
           <div className="flex items-center gap-1">
@@ -76,4 +70,3 @@ export default function EpisodeCard({ episode, onNewRandom }: EpisodeCardProps) 
     </Card>
   )
 }
-
