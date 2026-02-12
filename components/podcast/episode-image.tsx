@@ -21,6 +21,7 @@ interface EpisodeImageProps {
 export function EpisodeImage({ imageUrl, title }: EpisodeImageProps) {
   const [imageReady, setImageReady] = useState(false);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [cropResult, setCropResult] = useState<LetterboxDetectionResult | null>(
     null,
   );
@@ -88,7 +89,10 @@ export function EpisodeImage({ imageUrl, title }: EpisodeImageProps) {
       })
       .catch(() => {
         if (cancelled) return;
-        // Graceful fallback: show uncropped image without CORS
+        // The CORS-enabled analysis fetch failed. We still attempt to display
+        // the image via the original URL (without CORS on the <img>), but if
+        // the server is genuinely unreachable the <img> onError will fire and
+        // set loadFailed to stop the pulse.
         setImageSrc(imageUrl);
       });
 
@@ -129,7 +133,12 @@ export function EpisodeImage({ imageUrl, title }: EpisodeImageProps) {
       className="relative bg-blue-950/50 rounded-md mb-4 overflow-hidden transition-[aspect-ratio] duration-300 ease-in-out"
       style={{ aspectRatio }}
     >
-      <div className="absolute inset-0 flex items-center justify-center">
+      <div
+        className={cn(
+          "absolute inset-0 flex items-center justify-center",
+          imageUrl && !imageReady && !loadFailed && "animate-pulse",
+        )}
+      >
         <div className="absolute w-32 h-32 rounded-full bg-blue-400/15 blur-2xl" />
         <Podcast className="absolute w-24 h-24 text-blue-400 opacity-30 blur-[3px]" />
         <Podcast className="relative w-24 h-24 text-blue-100 opacity-20" />
@@ -141,6 +150,7 @@ export function EpisodeImage({ imageUrl, title }: EpisodeImageProps) {
           alt={title}
           fetchPriority="high"
           onLoad={() => setImageReady(true)}
+          onError={() => setLoadFailed(true)}
           className={cn(
             "relative h-full w-full object-cover rounded-md transition-opacity duration-300",
             imageReady ? "opacity-100" : "opacity-0",
