@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Podcast } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -24,28 +24,80 @@ export function EpisodeImage({ imageUrl, title }: EpisodeImageProps) {
   const [cropResult, setCropResult] = useState<LetterboxDetectionResult | null>(
     null,
   );
+  const blobUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!imageUrl) return;
 
     let cancelled = false;
 
+    /**
+     * Extract a blob URL from the already-loaded image via an offscreen canvas.
+     * This avoids a second network fetch for the visible <img>: the blob URL
+     * loads from memory and is same-origin, so no CORS headers are needed on
+     * the display path.
+     */
+    function createBlobUrl(img: HTMLImageElement): Promise<string> {
+      return new Promise((resolve, reject) => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("Could not get canvas context"));
+          return;
+        }
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error("toBlob returned null"));
+              return;
+            }
+            resolve(URL.createObjectURL(blob));
+          },
+          "image/jpeg",
+          0.95,
+        );
+      });
+    }
+
     loadImageForAnalysis(imageUrl)
-      .then((img) => {
+      .then(async (img) => {
         if (cancelled) return;
         const result = detectLetterbox(img);
         if (cancelled) return;
+
+        let src: string;
+        try {
+          src = await createBlobUrl(img);
+        } catch {
+          // Fallback: use original URL without CORS attribute on the <img>
+          src = imageUrl;
+        }
+
+        if (cancelled) {
+          // Clean up the blob URL we just created but will never use
+          if (src !== imageUrl) URL.revokeObjectURL(src);
+          return;
+        }
+
+        blobUrlRef.current = src !== imageUrl ? src : null;
         setCropResult(result);
-        setImageSrc(imageUrl);
+        setImageSrc(src);
       })
       .catch(() => {
         if (cancelled) return;
-        // Graceful fallback: show uncropped image
+        // Graceful fallback: show uncropped image without CORS
         setImageSrc(imageUrl);
       });
 
     return () => {
       cancelled = true;
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
     };
   }, [imageUrl]);
 
@@ -87,10 +139,8 @@ export function EpisodeImage({ imageUrl, title }: EpisodeImageProps) {
         <img
           src={imageSrc}
           alt={title}
-          crossOrigin="anonymous"
-          decoding="async"
           fetchPriority="high"
-          onLoad={() => requestAnimationFrame(() => setImageReady(true))}
+          onLoad={() => setImageReady(true)}
           className={cn(
             "relative h-full w-full object-cover rounded-md transition-opacity duration-300",
             imageReady ? "opacity-100" : "opacity-0",
