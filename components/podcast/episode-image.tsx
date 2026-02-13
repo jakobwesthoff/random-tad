@@ -5,7 +5,7 @@ import { Podcast } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   detectLetterbox,
-  loadImageForAnalysis,
+  loadImage,
   type LetterboxDetectionResult,
 } from "@/lib/letterbox-detection";
 
@@ -16,92 +16,71 @@ interface EpisodeImageProps {
 
 /**
  * Episode image with letterbox detection and CSS cropping.
- * Use with key={episode.id} so state auto-resets on episode change
+ *
+ * The image is drawn directly onto a visible <canvas> element, which doubles
+ * as the analysis surface for letterbox detection — avoiding the overhead of
+ * blob URL encoding/decoding entirely. If loading fails, the pulsing
+ * placeholder simply remains visible.
+ *
+ * Use with key={episode.id} so state auto-resets on episode change.
  */
 export function EpisodeImage({ imageUrl, title }: EpisodeImageProps) {
   const [imageReady, setImageReady] = useState(false);
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
   const [cropResult, setCropResult] = useState<LetterboxDetectionResult | null>(
     null,
   );
-  const blobUrlRef = useRef<string | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (!imageUrl) return;
 
     let cancelled = false;
 
-    /**
-     * Extract a blob URL from the already-loaded image via an offscreen canvas.
-     * This avoids a second network fetch for the visible <img>: the blob URL
-     * loads from memory and is same-origin, so no CORS headers are needed on
-     * the display path.
-     */
-    function createBlobUrl(img: HTMLImageElement): Promise<string> {
-      return new Promise((resolve, reject) => {
-        const canvas = document.createElement("canvas");
+    loadImage(imageUrl)
+      .then((img) => {
+        if (cancelled) return;
+
+        if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+          setLoadFailed(true);
+          return;
+        }
+
+        const canvas = canvasRef.current;
+        if (!canvas) {
+          setLoadFailed(true);
+          return;
+        }
+
         canvas.width = img.naturalWidth;
         canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext("2d");
+
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
         if (!ctx) {
-          reject(new Error("Could not get canvas context"));
+          setLoadFailed(true);
           return;
         }
-        ctx.drawImage(img, 0, 0);
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              reject(new Error("toBlob returned null"));
-              return;
-            }
-            resolve(URL.createObjectURL(blob));
-          },
-          "image/jpeg",
-          0.95,
-        );
-      });
-    }
 
-    loadImageForAnalysis(imageUrl)
-      .then(async (img) => {
-        if (cancelled) return;
-        const result = detectLetterbox(img);
-        if (cancelled) return;
-
-        let src: string;
         try {
-          src = await createBlobUrl(img);
+          // Draw the image onto the visible canvas — this is now the display surface
+          ctx.drawImage(img, 0, 0);
+          // Detect letterbox bars from the same context (no second canvas needed)
+          const result = detectLetterbox(ctx);
+          if (cancelled) return;
+
+          setCropResult(result);
+          setImageReady(true);
         } catch {
-          // Fallback: use original URL without CORS attribute on the <img>
-          src = imageUrl;
+          // Tainted canvas (CORS policy prevented pixel access after drawImage)
+          if (!cancelled) setLoadFailed(true);
         }
-
-        if (cancelled) {
-          // Clean up the blob URL we just created but will never use
-          if (src !== imageUrl) URL.revokeObjectURL(src);
-          return;
-        }
-
-        blobUrlRef.current = src !== imageUrl ? src : null;
-        setCropResult(result);
-        setImageSrc(src);
       })
       .catch(() => {
-        if (cancelled) return;
-        // The CORS-enabled analysis fetch failed. We still attempt to display
-        // the image via the original URL (without CORS on the <img>), but if
-        // the server is genuinely unreachable the <img> onError will fire and
-        // set loadFailed to stop the pulse.
-        setImageSrc(imageUrl);
+        if (!cancelled) setLoadFailed(true);
       });
 
     return () => {
       cancelled = true;
-      if (blobUrlRef.current) {
-        URL.revokeObjectURL(blobUrlRef.current);
-        blobUrlRef.current = null;
-      }
     };
   }, [imageUrl]);
 
@@ -109,11 +88,11 @@ export function EpisodeImage({ imageUrl, title }: EpisodeImageProps) {
   let aspectRatio: string;
   if (cropResult) {
     aspectRatio = `${cropResult.imageWidth} / ${cropResult.contentHeight}`;
-  } else if (imageSrc) {
-    // Detection returned null (no bars) or failed — show full square
+  } else if (imageReady) {
+    // Detection returned null (no bars) — show full square
     aspectRatio = "1 / 1";
   } else {
-    // Loading: use 4/3 as a reasonable default to minimize layout shift
+    // Loading or failed: use 4/3 as a reasonable default to minimize layout shift
     aspectRatio = "4 / 3";
   }
 
@@ -143,21 +122,16 @@ export function EpisodeImage({ imageUrl, title }: EpisodeImageProps) {
         <Podcast className="absolute w-24 h-24 text-blue-400 opacity-30 blur-[3px]" />
         <Podcast className="relative w-24 h-24 text-blue-100 opacity-20" />
       </div>
-      {imageSrc ? (
-        /* eslint-disable-next-line @next/next/no-img-element -- external image from podcast RSS feed */
-        <img
-          src={imageSrc}
-          alt={title}
-          fetchPriority="high"
-          onLoad={() => setImageReady(true)}
-          onError={() => setLoadFailed(true)}
-          className={cn(
-            "relative h-full w-full object-cover rounded-md transition-opacity duration-300",
-            imageReady ? "opacity-100" : "opacity-0",
-          )}
-          style={objectPosition ? { objectPosition } : undefined}
-        />
-      ) : null}
+      <canvas
+        ref={canvasRef}
+        role="img"
+        aria-label={title}
+        className={cn(
+          "relative h-full w-full object-cover rounded-md transition-opacity duration-300",
+          imageReady ? "opacity-100" : "opacity-0",
+        )}
+        style={objectPosition ? { objectPosition } : undefined}
+      />
     </div>
   );
 }

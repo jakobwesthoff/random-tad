@@ -26,28 +26,26 @@ const defaultConfig: LetterboxDetectionConfig = {
 };
 
 /**
- * Detect black (or custom-color) letterbox bars on an image by scanning
- * rows from top and bottom on an offscreen canvas.
+ * Detect black (or custom-color) letterbox bars by scanning rows from top
+ * and bottom on an already-drawn canvas context.
+ *
+ * The caller is responsible for:
+ * 1. Creating a canvas sized to the image dimensions
+ * 2. Obtaining a 2D context (ideally with `{ willReadFrequently: true }`)
+ * 3. Drawing the image onto the context via `drawImage`
  *
  * Returns null if detection fails (e.g. no content found, degenerate crop).
  */
 export function detectLetterbox(
-  image: HTMLImageElement,
+  ctx: CanvasRenderingContext2D,
   config?: Partial<LetterboxDetectionConfig>,
 ): LetterboxDetectionResult | null {
   const { color, threshold } = { ...defaultConfig, ...config };
-  const width = image.naturalWidth;
-  const height = image.naturalHeight;
+  const width = ctx.canvas.width;
+  const height = ctx.canvas.height;
 
   if (width === 0 || height === 0) return null;
 
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  if (!ctx) return null;
-
-  ctx.drawImage(image, 0, 0);
   const { data } = ctx.getImageData(0, 0, width, height);
 
   const [tr, tg, tb] = color;
@@ -98,9 +96,9 @@ export function detectLetterbox(
 /**
  * Load an image with crossOrigin="anonymous" for canvas pixel access.
  * The browser HTTP cache ensures this doesn't cause a double-fetch when
- * the visible <img> element uses the same src and crossOrigin attribute.
+ * another element uses the same src.
  */
-export function loadImageForAnalysis(url: string): Promise<HTMLImageElement> {
+export function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
