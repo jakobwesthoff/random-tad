@@ -1,6 +1,6 @@
 import { PodcastEpisode } from "@/types/podcast";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
 // Custom Apple icon component
@@ -58,69 +58,56 @@ async function getApplePodcastsLink(episodeTitle: string): Promise<string | null
   return null;
 }
 
+type ButtonState = "idle" | "loading" | "not_found";
+
 interface ApplePodcastButtonProps {
   episode: PodcastEpisode
 };
 
 export function ApplePodcastButton({ episode }: ApplePodcastButtonProps) {
-  const [applePodcastsUrl, setApplePodcastsUrl] = useState<string | null>(null)
-  const [isAppleLinkLoading, setIsAppleLinkLoading] = useState<boolean>(false)
+  const [state, setState] = useState<ButtonState>("idle");
 
+  const handleClick = async () => {
+    if (state !== "idle") return;
 
-  // Reload the corresponding link when episode changes
-  useEffect(() => {
-    async function fetchAppleLink() {
-      if (!episode) return
+    setState("loading");
 
-      setIsAppleLinkLoading(true)
-      setApplePodcastsUrl(null)
+    try {
+      const episodeTitle = episode.itunesTitle || episode.title;
+      const url = await getApplePodcastsLink(episodeTitle);
 
-      try {
-        const episodeTitle = episode.itunesTitle || episode.title
-        const url = await getApplePodcastsLink(episodeTitle)
-        setApplePodcastsUrl(url)
-      } catch (error) {
-        console.error("Error getting Apple Podcasts link:", error)
-        setApplePodcastsUrl(null)
-      } finally {
-        setIsAppleLinkLoading(false)
+      if (url) {
+        // Push the current page onto the history stack so the user can navigate back
+        // after being sent to Apple Podcasts. On iOS, Universal Links intercept the
+        // navigation and open the Podcasts app without actually leaving the page.
+        // On desktop, the browser navigates to the Apple Podcasts website and the
+        // user can hit back to return to random-tad.
+        history.pushState(null, "", window.location.href);
+        window.location.href = url;
+        setState("idle");
+      } else {
+        setState("not_found");
       }
+    } catch (error) {
+      console.error("Error getting Apple Podcasts link:", error);
+      setState("not_found");
     }
+  };
 
-    fetchAppleLink()
-  }, [episode])
-
-  const isDisabled = isAppleLinkLoading || applePodcastsUrl === null;
-
-  if (isDisabled) {
-    return <Button
+  return (
+    <Button
       variant="outline"
       className="flex-1 border-blue-500/20 text-slate-300 bg-blue-950/30 hover:bg-blue-900/40 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
       size="sm"
-      disabled
+      disabled={state !== "idle"}
+      onClick={handleClick}
     >
-      {isAppleLinkLoading ? (
+      {state === "loading" ? (
         <Loader2 className="h-3 w-3 animate-spin mr-1" />
       ) : (
         <AppleIcon className="h-3 w-3" />
       )}
       <span>Apple Podcasts</span>
     </Button>
-  }
-
-  return <Button
-    variant="outline"
-    className="flex-1 border-blue-500/20 text-slate-300 bg-blue-950/30 hover:bg-blue-900/40 hover:text-white"
-    size="sm"
-    asChild
-  >
-    <a
-      href={applePodcastsUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      <AppleIcon className="h-3 w-3" />
-      <span>Apple Podcasts</span>
-    </a>
-  </Button>
+  );
 }
