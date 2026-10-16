@@ -8,8 +8,21 @@ import { ThemeProvider } from "next-themes"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
+  // Base for the absolute URLs that link previews need.
+  metadataBase: new URL("https://random-tad.de"),
   title: "Random TAD - Trek am Dienstag Randomizer",
   description: "Discover random episodes from your favorite Star Trek podcast",
+  openGraph: {
+    type: "website",
+    url: "/",
+    title: "Random TAD",
+    description: "A random episode of Trek am Dienstag, one press away.",
+    images: [{ url: "/og.png", width: 1280, height: 640 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/og.png"],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
