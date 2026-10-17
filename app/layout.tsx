@@ -17,11 +17,19 @@ export const metadata: Metadata = {
     url: "/",
     title: "Random TAD",
     description: "A random episode of Trek am Dienstag, one press away.",
-    images: [{ url: "/og.png", width: 1280, height: 640 }],
+    images: [
+      {
+        url: "/og.png",
+        width: 1280,
+        height: 640,
+        type: "image/png",
+        alt: "Random TAD: a random episode of Trek am Dienstag, one press away. A glowing random button on a starfield.",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/og.png"],
+    images: [{ url: "/og.png", alt: "Random TAD: a random episode of Trek am Dienstag, one press away. A glowing random button on a starfield." }],
   },
   appleWebApp: {
     capable: true,
